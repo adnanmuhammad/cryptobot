@@ -5,9 +5,9 @@ var mysql = require('mysql');
 
 
 var con = mysql.createConnection({
-    host: "crypto-exchange.cvcoxaxglrwq.us-east-1.rds.amazonaws.com",
-    user: "admin",
-    password: "sVEH0VWtkOgb7LjGc4A2",
+    host: "localhost",
+    user: "root",
+    password: "",
     database: "cryptowebsocket"
 });
 
