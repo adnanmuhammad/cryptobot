@@ -5,10 +5,10 @@ var mysql = require('mysql');
 
 
 var con = mysql.createConnection({
-    host: "",
-    user: "",
-    password: "",
-    database: ""
+    host: "crypto-exchange.cvcoxaxglrwq.us-east-1.rds.amazonaws.com",
+    user: "admin",
+    password: "sVEH0VWtkOgb7LjGc4A2",
+    database: "cryptowebsocket"
 });
 
 con.connect(function(err) {
@@ -296,6 +296,15 @@ binanceWS.onCombinedStream([
                                 //if(err) throw err;
                                 //console.log("1 record inserted");
                             });
+
+                            //========== Insert data in extended Table ==========
+                                var sql_ext = "INSERT INTO crypto_feed_extended (startTime, endTime, start_date, end_date, symbol, rate_interval, firstTradeId, lastTradeId, open, close, high, low, volume, trades, final, quoteVolume, volumeActive, quoteVolumeActive, ignored) VALUES ('"+ klineData.startTime +"', '"+ klineData.endTime +"', '"+ unixtime_to_datetime(klineData.startTime) +"', '"+ unixtime_to_datetime(klineData.endTime) +"', '"+ klineData.symbol +"', '"+ klineData.interval +"', "+ klineData.firstTradeId +", "+klineData.lastTradeId+", "+klineData.open+", "+klineData.close+", "+klineData.high+", "+klineData.low+", "+klineData.volume+", "+klineData.trades+", '"+klineData.final+"', "+klineData.quoteVolume+", "+klineData.volumeActive+", "+klineData.quoteVolumeActive+", '"+klineData.ignored+"')";
+                                con.query(sql_ext, (err, result) => {
+                                    //if(err) throw err;
+                                    //console.log("1 record inserted");
+                                });
+                            //========== Insert data in extended Table ==========
+
                             }
                         }
                     });
@@ -332,14 +341,25 @@ binanceWS.onCombinedStream([
         con.query(sql, (err, result) => {
                 if(err) throw err;
 
-                console.log("Number of records deleted: " + result.affectedRows);
+                //console.log("Number of records deleted: " + result.affectedRows);
         });
         /* ================== This is to be used with simple MYSQL connection =================== */
-
 
     }
     setInterval(remove_older_data_from_master_data, (1000 * 60 * 60) );
     //============= Remove the older data that is 60-minutes before interval
+
+
+        //============= Remove the older data from extended table that is 200-minutes before interval
+        function remove_older_data_from_extended_table() {
+            var sql = "DELETE FROM crypto_feed_extended WHERE start_date < NOW() - INTERVAL 200 MINUTE";
+            con.query(sql, (err, result) => {
+                if(err) throw err;
+                    //console.log("Number of records deleted: " + result.affectedRows);
+                });
+        }
+        setInterval(remove_older_data_from_extended_table, (1000 * 60 * 200) );
+        //============= Remove the older data from extended table that is 200-minutes before interval
 
 
     function unixtime_to_datetime(timestamp) {
